@@ -1,0 +1,41 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: search-service
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: search-service-cdc-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+search:
+  engine:
+    type: ${SEARCH_ENGINE_TYPE:memory} # "memory" or "elasticsearch"
+    elasticsearch-url: ${ELASTICSEARCH_URL:http://localhost:9200}
+    alias-name: products_search
+  ranking:
+    title-boost: 3.0
+    brand-boost: 2.0
+    category-boost: 1.5
+    short-desc-boost: 1.2
+    desc-boost: 1.0
+    in-stock-boost: 1.5
+  topics:
+    products: ecommerce.cdc.catalog.products
+    variants: ecommerce.cdc.catalog.product_variants
+    categories: ecommerce.cdc.catalog.categories
+    dlq: ecommerce.cdc.catalog.dlq
+
+logging:
+  level:
+    com.ecommerce.search: DEBUG
+    org.apache.kafka: INFO
