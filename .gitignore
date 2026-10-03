@@ -1,0 +1,44 @@
+# ==============================================================================
+# Nani's Knitts Platform .gitignore
+# ==============================================================================
+
+# Runtime & Process State
+.pids/
+*.pid
+.DS_Store
+Thumbs.db
+*.log
+scratch/
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Frontend Builds & Testing Artifacts
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
+frontend/.cache/
+
+# Java & Backend Builds
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE & Editor Configs
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Environment & Local Overrides
+*.env.local
+*.local
