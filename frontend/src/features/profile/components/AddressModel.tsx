@@ -767,15 +767,15 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
                 {/* User Guidance Chip */}
                 <div
                   id="map-guidance-chip"
-                  class={`absolute top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full bg-[var(--bg-surface)]/95 backdrop-blur-md border border-[var(--border)] shadow-md text-[11px] font-medium text-[var(--text-secondary)] pointer-events-none flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 ease-in-out ${
+                  class={`absolute top-3 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-indigo-600 dark:bg-indigo-500 text-white shadow-xl border border-indigo-400/40 dark:border-indigo-300/40 text-xs font-bold pointer-events-none flex items-center gap-2 whitespace-nowrap transition-all duration-200 ease-in-out ${
                     isSuggestionsOpen()
                       ? "opacity-0 -translate-y-2 pointer-events-none invisible"
                       : "opacity-100 translate-y-0 visible"
                   }`}
                   aria-hidden={isSuggestionsOpen()}
                 >
-                  <span>📍</span>
-                  <span>Drag pointer or tap map to point to your house</span>
+                  <span class="text-amber-300 text-sm">📍</span>
+                  <span class="text-white font-bold tracking-wide">Drag pointer or tap map to point to your house</span>
                 </div>
 
                 {/* Map Controls: Zoom in/out */}
