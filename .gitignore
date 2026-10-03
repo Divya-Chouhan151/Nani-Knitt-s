@@ -19,6 +19,8 @@ frontend/dist/
 frontend/test-results/
 frontend/playwright-report/
 frontend/.cache/
+frontend/.vite/
+.vite/
 
 # Java & Backend Builds
 **/target/

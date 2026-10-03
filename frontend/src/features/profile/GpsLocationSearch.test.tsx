@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSignal } from "solid-js";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
-import { ZeptoAddressModal } from "./components/ZeptoAddressModal";
+import { AddressModel } from "./components/AddressModel";
 import * as googleMapsUtil from "./utils/googleMaps";
 
 describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact Doorstep Pinpoint", () => {
@@ -62,7 +62,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
     const [isOpen, setIsOpen] = createSignal(false);
 
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={onSave}
@@ -148,7 +148,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
 
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={async () => {}}
@@ -208,7 +208,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
 
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={async () => {}}
@@ -259,7 +259,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
 
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={onSave}
@@ -302,7 +302,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
     const [isOpen, setIsOpen] = createSignal(false);
 
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={onSave}
@@ -379,7 +379,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
     const [isOpen, setIsOpen] = createSignal(false);
 
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={onSave}
@@ -431,7 +431,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
     const [isOpen, setIsOpen] = createSignal(false);
 
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={onSave}
@@ -488,7 +488,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
   it("14. Search dropdown stacking order: suggestions dropdown has z-50 and sits above map-surface (z-10)", async () => {
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={async () => {}}
@@ -524,7 +524,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
   it("15. Cleaner UX: Pin guidance overlay and badge hide/fade out when search dropdown is open, and re-appear once closed", async () => {
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={async () => {}}
@@ -585,7 +585,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
   it("16. Dropdown supports maximum suggestions with internal scroll and unobstructed layout", async () => {
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={async () => {}}
@@ -631,7 +631,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
   it("17. Clear button (✕) dismisses search dropdown and restores pin guidance overlay", async () => {
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={async () => {}}
@@ -664,5 +664,89 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
       const guidanceChip = document.getElementById("map-guidance-chip");
       expect(guidanceChip?.className).toContain("opacity-100");
     });
+  });
+
+  it("18. Pin anchor stability: pin preserves translateX(-50%) during and after movement without jumping southeast", async () => {
+    const [isOpen, setIsOpen] = createSignal(false);
+    render(() => (
+      <AddressModel
+        isOpen={isOpen()}
+        onClose={() => setIsOpen(false)}
+        onSave={async () => {}}
+        defaultFullName="Dev Tester"
+        defaultPhone="+91 98765 00000"
+      />
+    ));
+    setIsOpen(true);
+
+    await waitFor(() => {
+      expect(screen.getByText("Set Location on Map")).toBeInTheDocument();
+    });
+
+    const pointer = document.getElementById("fixed-center-pin");
+    const groundAnchor = document.getElementById("pin-ground-anchor");
+    expect(pointer).toBeInTheDocument();
+    expect(groundAnchor).toBeInTheDocument();
+
+    // Verify initial positioning: strictly centered at top 50%, left 50% with translateX(-50%)
+    expect(pointer?.className).toContain("top-1/2");
+    expect(pointer?.className).toContain("left-1/2");
+    expect(pointer?.style.transform).toContain("-50%");
+    expect(pointer?.style.transform).toContain("-100%");
+    // animate-bounce must NEVER be applied to fixed-center-pin as it strips translateX(-50%)
+    expect(pointer?.className).not.toContain("animate-bounce");
+
+    // Start drag on the map
+    const mapSurface = document.getElementById("map-surface")!;
+    fireEvent.mouseDown(mapSurface, { clientX: 200, clientY: 200 });
+
+    // During drag: pin lifts strictly along the vertical axis, preserving translateX(-50%)
+    expect(pointer?.style.transform).toContain("-50%");
+    expect(pointer?.style.transform).toContain("-115%");
+    expect(pointer?.className).not.toContain("animate-bounce");
+
+    // Move mouse across multiple directions (southeast, northwest, etc.)
+    fireEvent.mouseMove(window, { clientX: 230, clientY: 240 });
+    expect(pointer?.style.transform).toContain("-50%");
+    expect(pointer?.className).not.toContain("animate-bounce");
+
+    // Release drag
+    fireEvent.mouseUp(window);
+
+    // After movement settles: pin returns to exact anchor without jumping southeast
+    await waitFor(() => {
+      expect(pointer?.style.transform).toContain("-50%");
+      expect(pointer?.style.transform).toContain("-100%");
+      expect(pointer?.className).not.toContain("animate-bounce");
+    });
+  });
+
+  it("19. Ground target anchor is centered at (50%, 50%) and drag move tracks coordinates smoothly", async () => {
+    const [isOpen, setIsOpen] = createSignal(false);
+    render(() => (
+      <AddressModel
+        isOpen={isOpen()}
+        onClose={() => setIsOpen(false)}
+        onSave={async () => {}}
+        defaultFullName="Dev Tester"
+        defaultPhone="+91 98765 00000"
+      />
+    ));
+    setIsOpen(true);
+
+    await waitFor(() => {
+      expect(screen.getByText("Set Location on Map")).toBeInTheDocument();
+    });
+
+    const groundAnchor = document.getElementById("pin-ground-anchor")!;
+    expect(groundAnchor.className).toContain("top-1/2");
+    expect(groundAnchor.className).toContain("left-1/2");
+    expect(groundAnchor.className).toContain("-translate-x-1/2");
+    expect(groundAnchor.className).toContain("-translate-y-1/2");
+
+    // Pointer element sits directly above ground anchor
+    const pointer = document.getElementById("fixed-center-pin")!;
+    expect(pointer.className).toContain("top-1/2");
+    expect(pointer.className).toContain("left-1/2");
   });
 });

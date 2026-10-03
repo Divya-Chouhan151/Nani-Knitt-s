@@ -13,7 +13,7 @@ import {
   loadGoogleMapsScript,
 } from "../utils/googleMaps";
 
-export interface ZeptoAddressModalProps {
+export interface AddressModelProps {
   isOpen: boolean;
   editingAddress?: Address | null;
   onClose: () => void;
@@ -22,8 +22,9 @@ export interface ZeptoAddressModalProps {
   defaultFullName?: string;
   defaultPhone?: string;
 }
+export type AddressModalProps = AddressModelProps;
 
-export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
+export function AddressModel(props: AddressModelProps) {
   // Step state: "map" (Pin selection) -> "form" (Manual address details)
   const [step, setStep] = createSignal<"map" | "form">("map");
 
@@ -51,9 +52,11 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
   ];
 
   const [isPinBouncing, setIsPinBouncing] = createSignal(false);
+  let bounceTimer: ReturnType<typeof setTimeout> | null = null;
   const triggerPinBounce = () => {
+    if (bounceTimer) clearTimeout(bounceTimer);
     setIsPinBouncing(true);
-    setTimeout(() => setIsPinBouncing(false), 550);
+    bounceTimer = setTimeout(() => setIsPinBouncing(false), 300);
   };
 
   const tileInfo = createMemo(() => {
@@ -81,7 +84,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
   const [isSuggestionsOpen, setIsSuggestionsOpen] = createSignal(false);
   const [isSearching, setIsSearching] = createSignal(false);
 
-  // Step 2 Form Fields (Zepto review & complete details)
+  // Step 2 Form Fields (Review & complete details)
   const [label, setLabel] = createSignal<"Home" | "Work" | "Other">("Home");
   const [fullName, setFullName] = createSignal("");
   const [phone, setPhone] = createSignal("");
@@ -176,7 +179,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
           setIsDefaultBilling(a.isDefaultBilling || false);
           setStep("form"); // Edit existing opens directly to form
         } else {
-          // New address flow: Starts at Step 1 (Zepto Map Pin Selection)
+          // New address flow: Starts at Step 1 (Map Pin Selection)
           setStep("map");
           setLabel("Home");
           setFullName(props.defaultFullName || "");
@@ -330,6 +333,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
 
   // Map panning & Pin drag handlers
   const handleStartDrag = (clientX: number, clientY: number, fromPin = false) => {
+    setIsPinBouncing(false);
     setIsPanning(true);
     setIsDraggingPin(fromPin);
     totalDragDistance = 0;
@@ -340,19 +344,14 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
     if (!dragStart()) return;
     const dx = clientX - dragStart()!.x;
     const dy = clientY - dragStart()!.y;
+    if (dx === 0 && dy === 0) return;
     totalDragDistance += Math.hypot(dx, dy);
 
     setDragStart({ x: clientX, y: clientY });
 
-    const z = zoom();
-    const n = Math.pow(2, z);
-    const deltaLng = -(dx / 256) * (360 / n);
-    const latRad = (mapCoords().lat * Math.PI) / 180;
-    const deltaLat = (dy / 256) * (360 / n) * Math.cos(latRad);
-    const newLat = Math.max(-85.0511, Math.min(85.0511, mapCoords().lat + deltaLat));
-    const newLng = ((mapCoords().lng + deltaLng + 540) % 360) - 180;
-    setMapCoords({ lat: newLat, lng: newLng });
-    debouncedGeocode(newLat, newLng);
+    const newCoords = pixelOffsetToCoords(-dx, -dy, mapCoords().lat, mapCoords().lng, zoom());
+    setMapCoords(newCoords);
+    debouncedGeocode(newCoords.lat, newCoords.lng);
   };
 
   const handleEndDrag = () => {
@@ -526,7 +525,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
   return (
     <Show when={props.isOpen}>
       <div
-        id="zepto-address-modal"
+        id="address-modal"
         class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-200"
       >
         <div class="bg-[var(--bg-surface)] border border-[var(--border)] rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-2">
@@ -561,7 +560,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
             </button>
           </div>
 
-          {/* STEP 1: Zepto Map Pin Selection Screen */}
+          {/* STEP 1: Map Pin Selection Screen */}
           <Show when={step() === "map"}>
             <div class="flex-1 flex flex-col min-h-[480px] sm:min-h-[520px] relative select-none">
               {/* Seeking Permission Banner */}
@@ -769,15 +768,15 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
                 {/* User Guidance Chip */}
                 <div
                   id="map-guidance-chip"
-                  class={`absolute top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full bg-[var(--bg-surface)]/95 backdrop-blur-md border border-[var(--border)] shadow-md text-[11px] font-medium text-[var(--text-secondary)] pointer-events-none flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 ease-in-out ${
+                  class={`absolute top-3 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-indigo-600 dark:bg-indigo-500 text-white shadow-xl border border-indigo-400/40 dark:border-indigo-300/40 text-xs font-bold pointer-events-none flex items-center gap-2 whitespace-nowrap transition-all duration-200 ease-in-out ${
                     isSuggestionsOpen()
                       ? "opacity-0 -translate-y-2 pointer-events-none invisible"
                       : "opacity-100 translate-y-0 visible"
                   }`}
                   aria-hidden={isSuggestionsOpen()}
                 >
-                  <span>📍</span>
-                  <span>Drag pointer or tap map to point to your house</span>
+                  <span class="text-amber-300 text-sm">📍</span>
+                  <span class="text-white font-bold tracking-wide">Drag pointer or tap map to point to your house</span>
                 </div>
 
                 {/* Map Controls: Zoom in/out */}
@@ -808,21 +807,53 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
                   </button>
                 </div>
 
-                {/* 📍 MOVABLE MAP POINTER (Hybrid Pan + Building-level Pick & Drop) */}
+                {/* Scoped Keyframes for Anchor-Locked Drop Animation */}
+                <style>{`
+                  @keyframes pinDrop {
+                    0% { transform: translate(-50%, -120%); }
+                    50% { transform: translate(-50%, -96%); }
+                    75% { transform: translate(-50%, -102%); }
+                    100% { transform: translate(-50%, -100%); }
+                  }
+                  .pin-drop-anim {
+                    animation: pinDrop 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                  }
+                `}</style>
+
+                {/* 🎯 Ground Target Point (Always anchored at exact map center: 50%, 50%) */}
+                <div
+                  id="pin-ground-anchor"
+                  class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none flex items-center justify-center w-6 h-6"
+                >
+                  <div class="w-4 h-4 rounded-full border-2 border-rose-500/80 bg-rose-500/20 animate-ping absolute" />
+                  <div
+                    class={`rounded-full bg-black/40 transition-all duration-150 ${
+                      isDraggingPin() || isPanning()
+                        ? "w-3 h-1 opacity-30 scale-75"
+                        : "w-2.5 h-1.5 opacity-70 scale-100"
+                    }`}
+                  />
+                </div>
+
+                {/* 📍 MOVABLE MAP POINTER (Anchored with tip at exact center: 50%, 50%) */}
                 <div
                   id="fixed-center-pin"
-                  class={`absolute top-1/2 left-1/2 z-30 flex flex-col items-center cursor-grab active:cursor-grabbing select-none pointer-events-auto transition-transform duration-150 ${
-                    isPinBouncing() ? "animate-bounce" : ""
+                  class={`absolute top-1/2 left-1/2 z-30 flex flex-col items-center cursor-grab active:cursor-grabbing select-none pointer-events-auto ${
+                    isPinBouncing() && !isPanning() && !isDraggingPin() ? "pin-drop-anim" : ""
                   }`}
                   style={{
                     transform: isDraggingPin() || isPanning() ? "translate(-50%, -115%)" : "translate(-50%, -100%)",
+                    "transform-origin": "bottom center",
+                    transition: isPinBouncing() ? "none" : "transform 150ms ease-out",
                   }}
                   onMouseDown={(e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     handleStartDrag(e.clientX, e.clientY, true);
                   }}
                   onTouchStart={(e) => {
                     if (e.touches.length === 1) {
+                      e.stopPropagation();
                       handleStartDrag(e.touches[0].clientX, e.touches[0].clientY, true);
                     }
                   }}
@@ -846,9 +877,9 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
                   <div
                     class={`relative transition-transform duration-150 ease-out origin-bottom ${
                       isDraggingPin()
-                        ? "-translate-y-6 scale-125 drop-shadow-2xl"
+                        ? "-translate-y-2 scale-110 drop-shadow-2xl"
                         : isPanning()
-                        ? "-translate-y-3 scale-110 drop-shadow-2xl"
+                        ? "-translate-y-1 scale-105 drop-shadow-2xl"
                         : "translate-y-0 scale-100 drop-shadow-md"
                     }`}
                   >
@@ -861,12 +892,6 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
                       />
                       <circle cx="22" cy="22" r="7" fill="#ffffff" />
                     </svg>
-                  </div>
-
-                  {/* Pin Base Shadow & Target Ring */}
-                  <div class="relative flex items-center justify-center -mt-1">
-                    <div class="w-4 h-4 rounded-full border-2 border-rose-500 bg-rose-500/30 animate-ping absolute" />
-                    <div class="w-2.5 h-1.5 bg-black/40 rounded-full" />
                   </div>
                 </div>
 
@@ -932,7 +957,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
             </div>
           </Show>
 
-          {/* STEP 2: Manual Address Detail Form (Zepto Review & Correction) */}
+          {/* STEP 2: Manual Address Detail Form (Review & Correction) */}
           <Show when={step() === "form"}>
             <div class="p-5 overflow-y-auto space-y-4 flex-1">
               {/* Confirmed Pin Summary Banner with "Change" option */}
@@ -973,7 +998,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
                     class="w-full bg-[var(--bg-page)] border border-[var(--border)] rounded-xl py-2 px-3 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] transition-all"
                   />
                   <p class="text-[10px] text-[var(--text-secondary)] mt-0.5">
-                    Zepto delivery partners use this to deliver directly to your door.
+                    Our delivery partners use this to deliver directly to your door.
                   </p>
                 </div>
 
@@ -1206,5 +1231,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
   );
 }
 
-// Export as GoogleMapsAddressModal for transparent drop-in compatibility
-export const GoogleMapsAddressModal = ZeptoAddressModal;
+// Export as AddressModel, AddressModal, and GoogleMapsAddressModal for drop-in compatibility
+export const AddressModal = AddressModel;
+export const GoogleMapsAddressModal = AddressModel;
+export default AddressModel;

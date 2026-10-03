@@ -9,7 +9,7 @@ import {
   setDefaultBillingApi,
 } from "../../../api/addresses";
 import { authStore } from "../../auth/stores/authStore";
-import { ZeptoAddressModal } from "../components/ZeptoAddressModal";
+import { AddressModel } from "../components/AddressModel";
 
 export const MAX_SAVED_ADDRESSES = 10;
 
@@ -38,7 +38,7 @@ export function AddressesTab() {
 
   onMount(loadAddresses);
 
-  // Both Empty-State CTA and Regular "+ Add Address" trigger this same Zepto flow
+  // Both Empty-State CTA and Regular "+ Add Address" trigger this same address modal flow
   const openAddModal = () => {
     if (isAtLimit()) {
       authStore.showToast("You've reached the maximum number of saved addresses (10). Remove one to add a new one.");
@@ -328,8 +328,8 @@ export function AddressesTab() {
         </Show>
       </Show>
 
-      {/* Zepto-Style 2-Step Address Entry & Edit Modal */}
-      <ZeptoAddressModal
+      {/* 2-Step Address Entry & Edit Modal */}
+      <AddressModel
         isOpen={isModalOpen()}
         editingAddress={editingAddress()}
         onClose={() => setIsModalOpen(false)}
