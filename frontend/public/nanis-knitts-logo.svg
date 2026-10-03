@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64" fill="none" class="nanis-knitts-logo">
+  <defs>
+    <!-- Skin Tone -->
+    <linearGradient id="naniSkin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FED7AA" />
+      <stop offset="100%" stop-color="#FDBA74" />
+    </linearGradient>
+
+    <!-- Hair Tone -->
+    <linearGradient id="naniHair" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EDE9FE" />
+      <stop offset="50%" stop-color="#DDD6FE" />
+      <stop offset="100%" stop-color="#C4B5FD" />
+    </linearGradient>
+
+    <!-- Cozy Knitted Shawl Gradient -->
+    <linearGradient id="naniShawl" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F472B6" />
+      <stop offset="50%" stop-color="#D946EF" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </linearGradient>
+
+    <!-- Golden Knitting Needles -->
+    <linearGradient id="needleGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+
+    <!-- Yarn Ball -->
+    <linearGradient id="yarnBallGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB7185" />
+      <stop offset="50%" stop-color="#E11D48" />
+      <stop offset="100%" stop-color="#9F1239" />
+    </linearGradient>
+
+    <!-- Bright Title Gradient -->
+    <linearGradient id="brightTitleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F43F5E" />
+      <stop offset="50%" stop-color="#D946EF" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+
+    <!-- Soft Drop Shadow Filter -->
+    <filter id="softGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#D946EF" flood-opacity="0.25"/>
+    </filter>
+
+    <style>
+      @keyframes needleLeftMotion {
+        0%, 100% { transform: rotate(-18deg); }
+        50% { transform: rotate(4deg); }
+      }
+      @keyframes needleRightMotion {
+        0%, 100% { transform: rotate(18deg); }
+        50% { transform: rotate(-5deg); }
+      }
+      @keyframes yarnBobbing {
+        0%, 100% { transform: rotate(0deg) scale(1); }
+        25% { transform: rotate(12deg) scale(1.03); }
+        75% { transform: rotate(-10deg) scale(0.98); }
+      }
+      @keyframes threadFlex {
+        0%, 100% { d: path("M48 54 Q36 50 32 44"); }
+        50% { d: path("M48 54 Q40 45 32 42"); }
+      }
+      @keyframes fabricBreathing {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .svg-needle-l {
+        transform-origin: 20px 48px;
+        animation: needleLeftMotion 1.1s ease-in-out infinite;
+      }
+      .svg-needle-r {
+        transform-origin: 44px 48px;
+        animation: needleRightMotion 1.1s ease-in-out infinite;
+        animation-delay: -0.2s;
+      }
+      .svg-yarn-ball {
+        transform-origin: 50px 52px;
+        animation: yarnBobbing 2.2s ease-in-out infinite;
+      }
+      .svg-thread-line {
+        animation: threadFlex 1.1s ease-in-out infinite;
+      }
+      .svg-swatch {
+        transform-origin: 32px 44px;
+        animation: fabricBreathing 1.8s ease-in-out infinite;
+      }
+    </style>
+  </defs>
+
+  <!-- Left: Animated Nani Knitting Figure -->
+  <g transform="translate(4, 0)">
+    <!-- 1. Hair Bun -->
+    <ellipse cx="32" cy="11" rx="8" ry="6.5" fill="url(#naniHair)" />
+    <!-- Knitting needle hair-stick -->
+    <line x1="22" y1="9" x2="42" y2="13" stroke="url(#needleGold)" stroke-width="1.6" stroke-linecap="round" />
+    <circle cx="22" cy="9" r="1.5" fill="#D97706" />
+
+    <!-- 2. Cozy Knitted Shawl / Body -->
+    <path d="M17 56 C17 38 23 29 32 29 C41 29 47 38 47 56 Z" fill="url(#naniShawl)" />
+    <path d="M23 37 Q32 44 41 37" stroke="#FCE7F3" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-dasharray="2 2" />
+
+    <!-- 3. Head & Face -->
+    <circle cx="32" cy="22" r="10.5" fill="url(#naniSkin)" />
+    <path d="M21.5 20 C24 13 28 13 32 15 C36 13 40 13 42.5 20 C38 18 34 18 32 19 C30 18 26 18 21.5 20 Z" fill="url(#naniHair)" />
+
+    <!-- Glasses & Eyes -->
+    <circle cx="28.5" cy="22" r="3.2" stroke="#831843" stroke-width="1.1" fill="none" opacity="0.9" />
+    <circle cx="35.5" cy="22" r="3.2" stroke="#831843" stroke-width="1.1" fill="none" opacity="0.9" />
+    <path d="M31.7 22 L32.3 22" stroke="#831843" stroke-width="1.1" />
+    <path d="M27.2 21.5 Q28.5 20.3 29.8 21.5" stroke="#701A75" stroke-width="1" fill="none" stroke-linecap="round" />
+    <path d="M34.2 21.5 Q35.5 20.3 36.8 21.5" stroke="#701A75" stroke-width="1" fill="none" stroke-linecap="round" />
+    <path d="M30 26.5 Q32 28.5 34 26.5" stroke="#9D174D" stroke-width="1.1" fill="none" stroke-linecap="round" />
+    <circle cx="25.5" cy="24.5" r="1.5" fill="#FB7185" opacity="0.6" />
+    <circle cx="38.5" cy="24.5" r="1.5" fill="#FB7185" opacity="0.6" />
+
+    <!-- 4. Knitted Fabric Swatch -->
+    <g class="svg-swatch">
+      <path d="M28 44 Q32 46 36 44 L37 52 Q32 54 27 52 Z" fill="#E879F9" opacity="0.9" />
+      <line x1="30" y1="45" x2="29" y2="51" stroke="#FDF2F8" stroke-width="0.8" stroke-linecap="round" />
+      <line x1="32" y1="45" x2="32" y2="52" stroke="#FDF2F8" stroke-width="0.8" stroke-linecap="round" />
+      <line x1="34" y1="45" x2="35" y2="51" stroke="#FDF2F8" stroke-width="0.8" stroke-linecap="round" />
+    </g>
+
+    <!-- 5. Left Needle & Hand -->
+    <g class="svg-needle-l">
+      <line x1="20" y1="48" x2="35" y2="38" stroke="url(#needleGold)" stroke-width="2" stroke-linecap="round" />
+      <circle cx="20" cy="48" r="2.2" fill="#D97706" />
+    </g>
+    <circle cx="24" cy="44" r="3" fill="url(#naniSkin)" />
+
+    <!-- 6. Right Needle & Hand -->
+    <g class="svg-needle-r">
+      <line x1="44" y1="48" x2="29" y2="38" stroke="url(#needleGold)" stroke-width="2" stroke-linecap="round" />
+      <circle cx="44" cy="48" r="2.2" fill="#D97706" />
+    </g>
+    <circle cx="40" cy="44" r="3" fill="url(#naniSkin)" />
+
+    <!-- 7. Connecting Thread Strand -->
+    <path d="M48 54 Q36 50 32 44" stroke="#E11D48" stroke-width="1.6" fill="none" stroke-linecap="round" class="svg-thread-line" />
+
+    <!-- 8. Yarn Ball -->
+    <g class="svg-yarn-ball">
+      <circle cx="50" cy="52" r="7.5" fill="url(#yarnBallGrad)" />
+      <path d="M45 50 Q50 46 55 50" stroke="#FFE4E6" stroke-width="1" fill="none" opacity="0.75" />
+      <path d="M44 53 Q50 58 56 53" stroke="#FFE4E6" stroke-width="1" fill="none" opacity="0.75" />
+      <path d="M47 46 Q51 52 47 58" stroke="#FFE4E6" stroke-width="1" fill="none" opacity="0.75" />
+      <path d="M53 46 Q49 52 53 58" stroke="#FFE4E6" stroke-width="1" fill="none" opacity="0.75" />
+    </g>
+  </g>
+
+  <!-- Right: Typography Wordmark & Tagline -->
+  <g transform="translate(68, 0)">
+    <!-- Script Wordmark "Nani's Knitts" with bright radiant gradient -->
+    <text x="0" y="36" font-family="'Pacifico', 'Brush Script MT', cursive, serif" font-size="27" font-weight="bold" fill="url(#brightTitleGrad)" letter-spacing="0.5" filter="url(#softGlow)">
+      Nani's Knitts
+    </text>
+
+    <!-- Cute Heart Accent -->
+    <path d="M164 16 C164 13 162 11 160 11 C158 11 156.5 12.5 156 14 C155.5 12.5 154 11 152 11 C150 11 148 13 148 16 C148 20 156 25 156 25 C156 25 164 20 164 16 Z" fill="#F43F5E"/>
+
+    <!-- Tagline "handmade & heartfelt" -->
+    <text x="2" y="52" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="700" text-transform="uppercase" letter-spacing="2.8" fill="#E11D48">
+      handmade &amp; heartfelt
+    </text>
+  </g>
+</svg>

@@ -1,0 +1,26 @@
+server:
+  port: 0
+
+spring:
+  application:
+    name: search-service-test
+  kafka:
+    listener:
+      auto-startup: false
+
+search:
+  engine:
+    type: memory
+    alias-name: products_search_test
+  ranking:
+    title-boost: 3.0
+    brand-boost: 2.0
+    category-boost: 1.5
+    short-desc-boost: 1.2
+    desc-boost: 1.0
+    in-stock-boost: 1.5
+  topics:
+    products: ecommerce.cdc.catalog.products
+    variants: ecommerce.cdc.catalog.product_variants
+    categories: ecommerce.cdc.catalog.categories
+    dlq: ecommerce.cdc.catalog.dlq
