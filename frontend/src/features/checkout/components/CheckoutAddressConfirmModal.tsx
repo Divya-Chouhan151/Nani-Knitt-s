@@ -4,7 +4,7 @@ import { fetchAddressesApi, createAddressApi } from "../../../api/addresses";
 import { authStore } from "../../auth/stores/authStore";
 import { cartStore } from "../../cart/stores/cartStore";
 import { localeStore } from "../../../stores/localeStore";
-import { ZeptoAddressModal } from "../../profile/components/ZeptoAddressModal";
+import { AddressModel, ZeptoAddressModal } from "../../profile/components/AddressModel";
 
 export interface CheckoutAddressConfirmModalProps {
   isOpen: boolean;

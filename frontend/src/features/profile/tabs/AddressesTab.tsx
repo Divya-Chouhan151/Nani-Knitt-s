@@ -9,7 +9,7 @@ import {
   setDefaultBillingApi,
 } from "../../../api/addresses";
 import { authStore } from "../../auth/stores/authStore";
-import { ZeptoAddressModal } from "../components/ZeptoAddressModal";
+import { AddressModel, ZeptoAddressModal } from "../components/AddressModel";
 
 export const MAX_SAVED_ADDRESSES = 10;
 
