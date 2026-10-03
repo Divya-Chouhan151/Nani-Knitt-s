@@ -4,7 +4,7 @@ import { fetchAddressesApi, createAddressApi } from "../../../api/addresses";
 import { authStore } from "../../auth/stores/authStore";
 import { cartStore } from "../../cart/stores/cartStore";
 import { localeStore } from "../../../stores/localeStore";
-import { AddressModel, ZeptoAddressModal } from "../../profile/components/AddressModel";
+import { AddressModel } from "../../profile/components/AddressModel";
 
 export interface CheckoutAddressConfirmModalProps {
   isOpen: boolean;
@@ -163,7 +163,7 @@ export function CheckoutAddressConfirmModal(props: CheckoutAddressConfirmModalPr
                       <div class="space-y-1">
                         <h4 class="text-sm font-bold text-[var(--text-primary)]">No saved delivery address</h4>
                         <p class="text-xs text-[var(--text-secondary)] max-w-xs mx-auto">
-                          Please add your delivery address using the Zepto map pin picker before proceeding to payment.
+                          Please add your delivery address using the map pin picker before proceeding to payment.
                         </p>
                       </div>
                       <button
@@ -431,8 +431,8 @@ export function CheckoutAddressConfirmModal(props: CheckoutAddressConfirmModalPr
           </div>
         </div>
 
-        {/* Nested Zepto Address Entry Modal if user adds an address during checkout */}
-        <ZeptoAddressModal
+        {/* Nested Address Entry Modal if user adds an address during checkout */}
+        <AddressModel
           isOpen={isAddAddressModalOpen()}
           onClose={() => setIsAddAddressModalOpen(false)}
           onSave={handleSaveNewAddress}

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSignal } from "solid-js";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
-import { AddressModel, ZeptoAddressModal } from "./components/AddressModel";
+import { AddressModel } from "./components/AddressModel";
 import * as googleMapsUtil from "./utils/googleMaps";
 
 describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact Doorstep Pinpoint", () => {
@@ -62,7 +62,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
     const [isOpen, setIsOpen] = createSignal(false);
 
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={onSave}
@@ -148,7 +148,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
 
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={async () => {}}
@@ -208,7 +208,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
 
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={async () => {}}
@@ -259,7 +259,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
 
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={onSave}
@@ -302,7 +302,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
     const [isOpen, setIsOpen] = createSignal(false);
 
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={onSave}
@@ -379,7 +379,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
     const [isOpen, setIsOpen] = createSignal(false);
 
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={onSave}
@@ -431,7 +431,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
     const [isOpen, setIsOpen] = createSignal(false);
 
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={onSave}
@@ -488,7 +488,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
   it("14. Search dropdown stacking order: suggestions dropdown has z-50 and sits above map-surface (z-10)", async () => {
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={async () => {}}
@@ -524,7 +524,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
   it("15. Cleaner UX: Pin guidance overlay and badge hide/fade out when search dropdown is open, and re-appear once closed", async () => {
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={async () => {}}
@@ -585,7 +585,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
   it("16. Dropdown supports maximum suggestions with internal scroll and unobstructed layout", async () => {
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={async () => {}}
@@ -631,7 +631,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
   it("17. Clear button (✕) dismisses search dropdown and restores pin guidance overlay", async () => {
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={async () => {}}
@@ -669,7 +669,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
   it("18. Pin anchor stability: pin preserves translateX(-50%) during and after movement without jumping southeast", async () => {
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={async () => {}}
@@ -724,7 +724,7 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
   it("19. Ground target anchor is centered at (50%, 50%) and drag move tracks coordinates smoothly", async () => {
     const [isOpen, setIsOpen] = createSignal(false);
     render(() => (
-      <ZeptoAddressModal
+      <AddressModel
         isOpen={isOpen()}
         onClose={() => setIsOpen(false)}
         onSave={async () => {}}

@@ -8,7 +8,7 @@ A modern, high-performance e-commerce platform built with a Java Spring Boot mic
 
 ### Frontend
 - **Framework**: SolidJS + Vite + Tailwind CSS
-- **Features**: Real-time Catalog Browsing, Search with instant filters, Wishlist management, Zepto-style Doorstep Map Pinpoint Address Picker (India-wide), Cart & Checkout.
+- **Features**: Real-time Catalog Browsing, Search with instant filters, Wishlist management, Interactive Doorstep Map Pinpoint Address Picker (India-wide), Cart & Checkout.
 
 ### Backend Microservices
 - **Auth & Profile Service** (`port 8081`): JWT authentication, customer profiles, address book with geocoding, payment settings.

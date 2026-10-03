@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Zepto Address Flow: Permission, Map Pin, Manual Form, 10-Address Limit & Checkout Confirmation", () => {
+test.describe("Address Flow: Permission, Map Pin, Manual Form, 10-Address Limit & Checkout Confirmation", () => {
   test.describe.configure({ mode: "serial" });
 
   test.beforeEach(async ({ page, request }) => {
@@ -54,8 +54,8 @@ test.describe("Zepto Address Flow: Permission, Map Pin, Manual Form, 10-Address 
     await expect(emptyCta).toBeVisible();
     await emptyCta.click();
 
-    // Zepto modal opens to Step 1: Set Location on Map
-    const modal = page.locator("#zepto-address-modal");
+    // Modal opens to Step 1: Set Location on Map
+    const modal = page.locator("#address-modal");
     await expect(modal).toBeVisible();
     await expect(page.locator("text=Set Location on Map")).toBeVisible();
     await expect(page.locator("text=Step 1 of 2: Position pin at your exact doorstep")).toBeVisible();
@@ -114,7 +114,7 @@ test.describe("Zepto Address Flow: Permission, Map Pin, Manual Form, 10-Address 
     await expect(addBtn).toBeVisible({ timeout: 10000 });
     await addBtn.click();
 
-    const modal = page.locator("#zepto-address-modal");
+    const modal = page.locator("#address-modal");
     await expect(modal).toBeVisible();
 
     // Step 1 map opens
@@ -278,7 +278,7 @@ test.describe("Zepto Address Flow: Permission, Map Pin, Manual Form, 10-Address 
     await expect(addBtn).toBeVisible();
     await addBtn.click();
 
-    const modal = page.locator("#zepto-address-modal");
+    const modal = page.locator("#address-modal");
     await expect(modal).toBeVisible();
     await expect(page.locator("#fixed-center-pin")).toBeVisible();
 
@@ -329,7 +329,7 @@ test.describe("Zepto Address Flow: Permission, Map Pin, Manual Form, 10-Address 
     await expect(addBtn).toBeVisible();
     await addBtn.click();
 
-    const modal = page.locator("#zepto-address-modal");
+    const modal = page.locator("#address-modal");
     await expect(modal).toBeVisible();
 
     const pin = page.locator("#fixed-center-pin");
@@ -376,7 +376,7 @@ test.describe("Zepto Address Flow: Permission, Map Pin, Manual Form, 10-Address 
     await expect(addBtn).toBeVisible();
     await addBtn.click();
 
-    const modal = page.locator("#zepto-address-modal");
+    const modal = page.locator("#address-modal");
     await expect(modal).toBeVisible();
 
     const searchInput = page.locator("#places-search-input");
@@ -416,7 +416,7 @@ test.describe("Zepto Address Flow: Permission, Map Pin, Manual Form, 10-Address 
     await expect(addBtn).toBeVisible();
     await addBtn.click();
 
-    const modal = page.locator("#zepto-address-modal");
+    const modal = page.locator("#address-modal");
     await expect(modal).toBeVisible();
 
     // Revoke permission mid-session

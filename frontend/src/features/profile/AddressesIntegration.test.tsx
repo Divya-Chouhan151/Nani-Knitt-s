@@ -8,7 +8,7 @@ import * as addressApi from "../../api/addresses";
 import * as googleMapsUtil from "./utils/googleMaps";
 import { Address } from "../../types/profile";
 
-describe("Zepto Address Flow: Permission, Map Pin, Manual Form, 10-Address Limit & Checkout Confirmation", () => {
+describe("Address Flow: Permission, Map Pin, Manual Form, 10-Address Limit & Checkout Confirmation", () => {
   const mockUser = {
     id: "user_123",
     email: "artisan@naniknitts.com",
@@ -62,7 +62,7 @@ describe("Zepto Address Flow: Permission, Map Pin, Manual Form, 10-Address Limit
   });
 
   /* -------------------------------------------------------------
-     1. LOCATION PERMISSION & MAP PIN SELECTION (ZEPTO STEP 1)
+     1. LOCATION PERMISSION & MAP PIN SELECTION (STEP 1)
   ------------------------------------------------------------- */
   it("when location permission is granted: map opens centered at user GPS coords and shows fixed center pin", async () => {
     vi.spyOn(addressApi, "fetchAddressesApi").mockResolvedValue([]);
@@ -120,7 +120,7 @@ describe("Zepto Address Flow: Permission, Map Pin, Manual Form, 10-Address Limit
   });
 
   /* -------------------------------------------------------------
-     2. MANUAL DETAIL FORM (ZEPTO STEP 2)
+     2. MANUAL DETAIL FORM (STEP 2)
   ------------------------------------------------------------- */
   it("step 2 form: manual details are required, prefilled fields are editable, and label set is Home/Work/Other", async () => {
     vi.spyOn(addressApi, "fetchAddressesApi").mockResolvedValue([]);

@@ -13,7 +13,7 @@ import {
   loadGoogleMapsScript,
 } from "../utils/googleMaps";
 
-export interface ZeptoAddressModalProps {
+export interface AddressModelProps {
   isOpen: boolean;
   editingAddress?: Address | null;
   onClose: () => void;
@@ -22,8 +22,9 @@ export interface ZeptoAddressModalProps {
   defaultFullName?: string;
   defaultPhone?: string;
 }
+export type AddressModalProps = AddressModelProps;
 
-export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
+export function AddressModel(props: AddressModelProps) {
   // Step state: "map" (Pin selection) -> "form" (Manual address details)
   const [step, setStep] = createSignal<"map" | "form">("map");
 
@@ -83,7 +84,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
   const [isSuggestionsOpen, setIsSuggestionsOpen] = createSignal(false);
   const [isSearching, setIsSearching] = createSignal(false);
 
-  // Step 2 Form Fields (Zepto review & complete details)
+  // Step 2 Form Fields (Review & complete details)
   const [label, setLabel] = createSignal<"Home" | "Work" | "Other">("Home");
   const [fullName, setFullName] = createSignal("");
   const [phone, setPhone] = createSignal("");
@@ -178,7 +179,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
           setIsDefaultBilling(a.isDefaultBilling || false);
           setStep("form"); // Edit existing opens directly to form
         } else {
-          // New address flow: Starts at Step 1 (Zepto Map Pin Selection)
+          // New address flow: Starts at Step 1 (Map Pin Selection)
           setStep("map");
           setLabel("Home");
           setFullName(props.defaultFullName || "");
@@ -524,7 +525,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
   return (
     <Show when={props.isOpen}>
       <div
-        id="zepto-address-modal"
+        id="address-modal"
         class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-200"
       >
         <div class="bg-[var(--bg-surface)] border border-[var(--border)] rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-2">
@@ -559,7 +560,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
             </button>
           </div>
 
-          {/* STEP 1: Zepto Map Pin Selection Screen */}
+          {/* STEP 1: Map Pin Selection Screen */}
           <Show when={step() === "map"}>
             <div class="flex-1 flex flex-col min-h-[480px] sm:min-h-[520px] relative select-none">
               {/* Seeking Permission Banner */}
@@ -956,7 +957,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
             </div>
           </Show>
 
-          {/* STEP 2: Manual Address Detail Form (Zepto Review & Correction) */}
+          {/* STEP 2: Manual Address Detail Form (Review & Correction) */}
           <Show when={step() === "form"}>
             <div class="p-5 overflow-y-auto space-y-4 flex-1">
               {/* Confirmed Pin Summary Banner with "Change" option */}
@@ -997,7 +998,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
                     class="w-full bg-[var(--bg-page)] border border-[var(--border)] rounded-xl py-2 px-3 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] transition-all"
                   />
                   <p class="text-[10px] text-[var(--text-secondary)] mt-0.5">
-                    Zepto delivery partners use this to deliver directly to your door.
+                    Our delivery partners use this to deliver directly to your door.
                   </p>
                 </div>
 
@@ -1230,8 +1231,7 @@ export function ZeptoAddressModal(props: ZeptoAddressModalProps) {
   );
 }
 
-// Export as AddressModel, AddressModal, and GoogleMapsAddressModal for transparent drop-in compatibility
-export const AddressModel = ZeptoAddressModal;
-export const AddressModal = ZeptoAddressModal;
-export const GoogleMapsAddressModal = ZeptoAddressModal;
+// Export as AddressModel, AddressModal, and GoogleMapsAddressModal for drop-in compatibility
+export const AddressModal = AddressModel;
+export const GoogleMapsAddressModal = AddressModel;
 export default AddressModel;
