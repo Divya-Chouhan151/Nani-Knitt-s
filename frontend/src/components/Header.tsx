@@ -1,5 +1,5 @@
 import { createSignal, createEffect, on, onCleanup, onMount, Show } from "solid-js";
-import { useNavigate, useLocation } from "@solidjs/router";
+import { useNavigate } from "@solidjs/router";
 import { authStore } from "../features/auth/stores/authStore";
 import { cartStore } from "../features/cart/stores/cartStore";
 import { wishlistStore } from "../features/profile/stores/wishlistStore";
@@ -16,13 +16,6 @@ export interface HeaderProps {
 }
 
 export function Header(props: HeaderProps) {
-  let location: ReturnType<typeof useLocation>;
-  try {
-    location = useLocation();
-  } catch {
-    location = { pathname: "/", search: "", hash: "", query: {}, state: {} };
-  }
-
   let navigate: ReturnType<typeof useNavigate>;
   try {
     navigate = useNavigate();
@@ -33,18 +26,6 @@ export function Header(props: HeaderProps) {
       }
     }) as any;
   }
-
-  const showBackButton = () => {
-    return location.pathname !== "/";
-  };
-
-  const handleGoBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      window.history.back();
-    } else {
-      navigate("/");
-    }
-  };
   const [isDark, setIsDark] = createSignal(false);
   const [isMenuOpen, setIsMenuOpen] = createSignal(false);
   const [isSearchOpen, setIsSearchOpen] = createSignal(false);
@@ -138,21 +119,8 @@ export function Header(props: HeaderProps) {
   return (
     <header class="sticky top-0 z-40 w-full bg-[var(--bg-page)]/90 backdrop-blur-md border-b border-[var(--border)] transition-colors duration-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[5rem] sm:min-h-[5.5rem] py-2 flex items-center justify-between gap-4">
-        {/* Brand Logo - Nani's Knitts & Global Back Arrow */}
+        {/* Brand Logo - Nani's Knitts */}
         <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-          <Show when={showBackButton()}>
-            <button
-              type="button"
-              onClick={handleGoBack}
-              aria-label="Go back to previous page"
-              class="p-2 -ml-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border)]/40 transition-all flex items-center justify-center cursor-pointer group shadow-2xs"
-              title="Go back"
-            >
-              <svg class="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-              </svg>
-            </button>
-          </Show>
           <a
             href="/"
             class="flex items-center group cursor-pointer outline-none focus:outline-none active:outline-none focus:ring-0 active:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:opacity-85 [-webkit-tap-highlight-color:transparent]"
