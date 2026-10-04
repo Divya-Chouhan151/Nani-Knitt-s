@@ -154,6 +154,68 @@ public class SecurityManagementServiceImpl implements SecurityManagementService 
 
     @Override
     @Transactional
+    public void revokeAllOtherSessions(String email, String refreshTokenCookie, String ipAddress, String userAgent) {
+        User user = getUser(email);
+        List<RefreshToken> tokens = refreshTokenRepository.findByUserIdAndRevokedFalse(user.getId());
+
+        String currentHash = (refreshTokenCookie != null && !refreshTokenCookie.isBlank())
+                ? hashToken(refreshTokenCookie)
+                : null;
+
+        Instant now = Instant.now();
+        List<RefreshToken> validTokens = tokens.stream()
+                .filter(t -> t.getExpiresAt().isAfter(now))
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .collect(Collectors.toList());
+
+        UUID currentSessionId = null;
+        if (currentHash != null) {
+            for (RefreshToken t : validTokens) {
+                if (currentHash.equals(t.getTokenHash())) {
+                    currentSessionId = t.getId();
+                    break;
+                }
+            }
+        }
+        if (currentSessionId == null && validTokens.size() == 1) {
+            currentSessionId = validTokens.get(0).getId();
+        } else if (currentSessionId == null && !validTokens.isEmpty()) {
+            if (userAgent != null && !userAgent.isBlank()) {
+                for (RefreshToken t : validTokens) {
+                    if (userAgent.equals(t.getUserAgent())) {
+                        currentSessionId = t.getId();
+                        break;
+                    }
+                }
+            }
+            if (currentSessionId == null) {
+                currentSessionId = validTokens.get(0).getId();
+            }
+        }
+
+        final UUID finalCurrentId = currentSessionId;
+        List<RefreshToken> tokensToRevoke = validTokens.stream()
+                .filter(t -> finalCurrentId == null || !t.getId().equals(finalCurrentId))
+                .peek(t -> t.setRevoked(true))
+                .collect(Collectors.toList());
+
+        if (!tokensToRevoke.isEmpty()) {
+            refreshTokenRepository.saveAll(tokensToRevoke);
+            auditService.logEvent(user.getId(), "REVOKE_ALL_OTHER_SESSIONS", "SUCCESS", ipAddress, userAgent,
+                    "Revoked " + tokensToRevoke.size() + " other active session(s)");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void revokeAllSessions(String email) {
+        User user = getUser(email);
+        refreshTokenRepository.revokeAllActiveTokensByUser(user);
+        auditService.logEvent(user.getId(), "REVOKE_ALL_SESSIONS", "SUCCESS", null, null, "All active sessions revoked");
+    }
+
+    @Override
+    @Transactional
     public TwoFactorSetupResponse initiate2FaSetup(String email) {
         User user = getUser(email);
         String secret = TotpUtil.generateSecret();

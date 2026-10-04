@@ -50,6 +50,26 @@ export async function revokeSessionApi(sessionId: string, token?: string | null)
   if (!res.ok) throw new Error("Failed to revoke session");
 }
 
+export async function revokeAllOtherSessionsApi(token?: string | null): Promise<{ message: string }> {
+  const res = await fetch(`${SECURITY_API_URL}/sessions/others`, {
+    method: "DELETE",
+    headers: getAuthHeaders(token),
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to revoke other sessions");
+  return await res.json();
+}
+
+export async function revokeAllSessionsApi(token?: string | null): Promise<{ message: string }> {
+  const res = await fetch(`${SECURITY_API_URL}/sessions`, {
+    method: "DELETE",
+    headers: getAuthHeaders(token),
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to revoke all sessions");
+  return await res.json();
+}
+
 export async function initiate2FaSetupApi(token?: string | null): Promise<TwoFactorSetup> {
   const res = await fetch(`${SECURITY_API_URL}/2fa/setup`, {
     method: "POST",

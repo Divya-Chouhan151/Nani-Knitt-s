@@ -50,6 +50,25 @@ public class SecurityController {
         return ResponseEntity.ok(securityService.getActiveSessions(email));
     }
 
+    @DeleteMapping("/sessions/others")
+    public ResponseEntity<Map<String, String>> revokeAllOtherSessions(
+            Principal principal,
+            @CookieValue(name = "refreshToken", required = false) String refreshTokenCookie,
+            jakarta.servlet.http.HttpServletRequest request) {
+        String email = getAuthenticatedEmail(principal);
+        String ip = request != null ? request.getRemoteAddr() : null;
+        String userAgent = request != null ? request.getHeader("User-Agent") : null;
+        securityService.revokeAllOtherSessions(email, refreshTokenCookie, ip, userAgent);
+        return ResponseEntity.ok(Map.of("message", "All other active sessions have been revoked."));
+    }
+
+    @DeleteMapping("/sessions")
+    public ResponseEntity<Map<String, String>> revokeAllSessions(Principal principal) {
+        String email = getAuthenticatedEmail(principal);
+        securityService.revokeAllSessions(email);
+        return ResponseEntity.ok(Map.of("message", "All active sessions have been revoked."));
+    }
+
     @DeleteMapping("/sessions/{id}")
     public ResponseEntity<Void> revokeSession(
             Principal principal,
