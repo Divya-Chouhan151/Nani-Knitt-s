@@ -11,6 +11,7 @@ import java.util.UUID;
 public interface SecurityManagementService {
     void changePassword(String email, ChangePasswordRequest request);
     List<SessionResponse> getActiveSessions(String email);
+    List<SessionResponse> getActiveSessions(String email, String refreshTokenCookie, String ipAddress, String userAgent);
     void revokeSession(String email, UUID sessionId);
     TwoFactorSetupResponse initiate2FaSetup(String email);
     void confirm2Fa(String email, String code);

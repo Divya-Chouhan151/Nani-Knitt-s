@@ -37,8 +37,16 @@ public class SecurityController {
     }
 
     @GetMapping("/sessions")
-    public ResponseEntity<List<SessionResponse>> getSessions(Principal principal) {
+    public ResponseEntity<List<SessionResponse>> getSessions(
+            Principal principal,
+            @CookieValue(name = "refreshToken", required = false) String refreshTokenCookie,
+            jakarta.servlet.http.HttpServletRequest request) {
         String email = getAuthenticatedEmail(principal);
+        String userAgent = request != null ? request.getHeader("User-Agent") : null;
+        if (refreshTokenCookie != null || (userAgent != null && !userAgent.isBlank())) {
+            String ip = request != null ? request.getRemoteAddr() : null;
+            return ResponseEntity.ok(securityService.getActiveSessions(email, refreshTokenCookie, ip, userAgent));
+        }
         return ResponseEntity.ok(securityService.getActiveSessions(email));
     }
 

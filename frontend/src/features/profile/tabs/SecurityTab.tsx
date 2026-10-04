@@ -21,6 +21,7 @@ export function SecurityTab() {
   // Sessions state
   const [sessions, setSessions] = createSignal<Session[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = createSignal(true);
+  const [revokingId, setRevokingId] = createSignal<string | null>(null);
 
   // 2FA state
   const [is2FaEnabled, setIs2FaEnabled] = createSignal(false);
@@ -37,8 +38,8 @@ export function SecurityTab() {
   // Audit logs state
   const [logs, setLogs] = createSignal<SecurityEvent[]>([]);
 
-  const loadSecurityData = async () => {
-    setIsLoadingSessions(true);
+  const loadSecurityData = async (initial = false) => {
+    if (initial) setIsLoadingSessions(true);
     setIs2FaEnabled(Boolean(authStore.user()?.twoFactorEnabled));
     try {
       const [sess, audit] = await Promise.all([
@@ -50,11 +51,13 @@ export function SecurityTab() {
     } catch (err: any) {
       console.error("Failed to load security data", err);
     } finally {
-      setIsLoadingSessions(false);
+      if (initial) setIsLoadingSessions(false);
     }
   };
 
-  onMount(loadSecurityData);
+  onMount(() => {
+    loadSecurityData(true);
+  });
 
   // Password strength calculator
   const passwordStrength = () => {
@@ -114,12 +117,19 @@ export function SecurityTab() {
   };
 
   const handleRevokeSession = async (id: string) => {
+    if (revokingId()) return;
+    setRevokingId(id);
     try {
       await revokeSessionApi(id, authStore.accessToken());
       authStore.showToast("Session revoked");
-      await loadSecurityData();
+      // Optimistically remove session from local state so the page never reloads or flickers
+      setSessions((prev) => prev.filter((s) => s.id !== id));
+      // Silently refresh security logs in the background without resetting session list state
+      fetchSecurityLogsApi(authStore.accessToken()).then(setLogs).catch(() => {});
     } catch (err: any) {
-      authStore.showToast(err.message);
+      authStore.showToast(err.message || "Failed to revoke session");
+    } finally {
+      setRevokingId(null);
     }
   };
 
@@ -354,13 +364,28 @@ export function SecurityTab() {
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleRevokeSession(sess.id)}
-                      class="px-3 py-1 rounded-lg hover:bg-rose-500/10 text-rose-500 text-xs font-bold transition-all"
+                    <Show
+                      when={!sess.isCurrent}
+                      fallback={
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20 shadow-2xs">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                          Current Session
+                        </span>
+                      }
                     >
-                      Revoke
-                    </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleRevokeSession(sess.id);
+                        }}
+                        disabled={revokingId() === sess.id}
+                        class="px-3 py-1 rounded-lg hover:bg-rose-500/10 text-rose-500 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+                      >
+                        {revokingId() === sess.id ? "Revoking..." : "Revoke"}
+                      </button>
+                    </Show>
                   </div>
                 )}
               </For>
