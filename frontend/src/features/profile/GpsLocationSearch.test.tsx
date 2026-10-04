@@ -700,20 +700,21 @@ describe("GPS Feature: India-wide Multi-option Search, Non-Bangalore GPS & Exact
     const mapSurface = document.getElementById("map-surface")!;
     fireEvent.mouseDown(mapSurface, { clientX: 200, clientY: 200 });
 
-    // During drag: pin lifts strictly along the vertical axis, preserving translateX(-50%)
+    // During drag: pin remains stationary and anchored at center without hopping
     expect(pointer?.style.transform).toContain("-50%");
-    expect(pointer?.style.transform).toContain("-115%");
+    expect(pointer?.style.transform).toContain("-100%");
     expect(pointer?.className).not.toContain("animate-bounce");
 
     // Move mouse across multiple directions (southeast, northwest, etc.)
     fireEvent.mouseMove(window, { clientX: 230, clientY: 240 });
     expect(pointer?.style.transform).toContain("-50%");
+    expect(pointer?.style.transform).toContain("-100%");
     expect(pointer?.className).not.toContain("animate-bounce");
 
     // Release drag
     fireEvent.mouseUp(window);
 
-    // After movement settles: pin returns to exact anchor without jumping southeast
+    // After movement settles: pin remains at exact anchor without jumping southeast or bouncing
     await waitFor(() => {
       expect(pointer?.style.transform).toContain("-50%");
       expect(pointer?.style.transform).toContain("-100%");
