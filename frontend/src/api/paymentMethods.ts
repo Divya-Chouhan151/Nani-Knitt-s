@@ -1,8 +1,9 @@
 import { PaymentMethod, VpaValidationResult } from "../types/profile";
 
-const PAYMENT_METHODS_API_URL = import.meta.env.VITE_PROFILE_API_URL
-  ? `${import.meta.env.VITE_PROFILE_API_URL}/payment-methods`
-  : "http://localhost:8081/api/v1/profile/payment-methods";
+const PAYMENT_METHODS_API_URL =
+  typeof window !== "undefined" && window.location?.origin && window.location.origin !== "null"
+    ? (import.meta.env.VITE_PROFILE_API_URL ? `${import.meta.env.VITE_PROFILE_API_URL}/payment-methods` : `${window.location.origin}/api/v1/profile/payment-methods`)
+    : (import.meta.env.VITE_PROFILE_API_URL ? `${import.meta.env.VITE_PROFILE_API_URL}/payment-methods` : "http://localhost:8081/api/v1/profile/payment-methods");
 
 function getAuthHeaders(token?: string | null) {
   const headers: Record<string, string> = {

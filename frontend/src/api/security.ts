@@ -1,8 +1,9 @@
 import { SecurityEvent, Session, TwoFactorSetup } from "../types/profile";
 
-const SECURITY_API_URL = import.meta.env.VITE_PROFILE_API_URL
-  ? `${import.meta.env.VITE_PROFILE_API_URL}/security`
-  : "http://localhost:8081/api/v1/profile/security";
+const SECURITY_API_URL =
+  typeof window !== "undefined" && window.location?.origin && window.location.origin !== "null"
+    ? (import.meta.env.VITE_PROFILE_API_URL ? `${import.meta.env.VITE_PROFILE_API_URL}/security` : `${window.location.origin}/api/v1/profile/security`)
+    : (import.meta.env.VITE_PROFILE_API_URL ? `${import.meta.env.VITE_PROFILE_API_URL}/security` : "http://localhost:8081/api/v1/profile/security");
 
 function getAuthHeaders(token?: string | null) {
   const headers: Record<string, string> = {
