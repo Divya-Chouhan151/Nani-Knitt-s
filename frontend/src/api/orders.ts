@@ -1,8 +1,9 @@
 import { OrderDetail, OrderSummary } from "../types/profile";
 
-const ORDERS_API_URL = import.meta.env.VITE_PROFILE_API_URL
-  ? `${import.meta.env.VITE_PROFILE_API_URL}/orders`
-  : "http://localhost:8081/api/v1/profile/orders";
+const ORDERS_API_URL =
+  typeof window !== "undefined" && window.location?.origin && window.location.origin !== "null"
+    ? (import.meta.env.VITE_PROFILE_API_URL ? `${import.meta.env.VITE_PROFILE_API_URL}/orders` : `${window.location.origin}/api/v1/profile/orders`)
+    : (import.meta.env.VITE_PROFILE_API_URL ? `${import.meta.env.VITE_PROFILE_API_URL}/orders` : "http://localhost:8081/api/v1/profile/orders");
 
 function getAuthHeaders(token?: string | null) {
   const headers: Record<string, string> = {

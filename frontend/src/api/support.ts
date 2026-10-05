@@ -1,6 +1,9 @@
 import { SupportFaq, SupportTicket, SupportTicketDetail, SupportTicketMessage } from "../types/profile";
 
-const SUPPORT_API_URL = import.meta.env.VITE_SUPPORT_API_URL || "http://localhost:8081/api/v1/support";
+const SUPPORT_API_URL =
+  typeof window !== "undefined" && window.location?.origin && window.location.origin !== "null"
+    ? (import.meta.env.VITE_SUPPORT_API_URL || `${window.location.origin}/api/v1/support`)
+    : (import.meta.env.VITE_SUPPORT_API_URL || "http://localhost:8081/api/v1/support");
 
 function getAuthHeaders(token?: string | null) {
   const headers: Record<string, string> = {

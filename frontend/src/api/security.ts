@@ -1,8 +1,9 @@
 import { SecurityEvent, Session, TwoFactorSetup } from "../types/profile";
 
-const SECURITY_API_URL = import.meta.env.VITE_PROFILE_API_URL
-  ? `${import.meta.env.VITE_PROFILE_API_URL}/security`
-  : "http://localhost:8081/api/v1/profile/security";
+const SECURITY_API_URL =
+  typeof window !== "undefined" && window.location?.origin && window.location.origin !== "null"
+    ? (import.meta.env.VITE_PROFILE_API_URL ? `${import.meta.env.VITE_PROFILE_API_URL}/security` : `${window.location.origin}/api/v1/profile/security`)
+    : (import.meta.env.VITE_PROFILE_API_URL ? `${import.meta.env.VITE_PROFILE_API_URL}/security` : "http://localhost:8081/api/v1/profile/security");
 
 function getAuthHeaders(token?: string | null) {
   const headers: Record<string, string> = {
@@ -47,6 +48,26 @@ export async function revokeSessionApi(sessionId: string, token?: string | null)
     credentials: "include",
   });
   if (!res.ok) throw new Error("Failed to revoke session");
+}
+
+export async function revokeAllOtherSessionsApi(token?: string | null): Promise<{ message: string }> {
+  const res = await fetch(`${SECURITY_API_URL}/sessions/others`, {
+    method: "DELETE",
+    headers: getAuthHeaders(token),
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to revoke other sessions");
+  return await res.json();
+}
+
+export async function revokeAllSessionsApi(token?: string | null): Promise<{ message: string }> {
+  const res = await fetch(`${SECURITY_API_URL}/sessions`, {
+    method: "DELETE",
+    headers: getAuthHeaders(token),
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to revoke all sessions");
+  return await res.json();
 }
 
 export async function initiate2FaSetupApi(token?: string | null): Promise<TwoFactorSetup> {

@@ -64,21 +64,78 @@ public class SecurityManagementServiceImpl implements SecurityManagementService 
     @Override
     @Transactional(readOnly = true)
     public List<SessionResponse> getActiveSessions(String email) {
+        return getActiveSessions(email, null, null, null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SessionResponse> getActiveSessions(String email, String refreshTokenCookie, String ipAddress, String userAgent) {
         User user = getUser(email);
         List<RefreshToken> tokens = refreshTokenRepository.findByUserIdAndRevokedFalse(user.getId());
 
+        String currentHash = (refreshTokenCookie != null && !refreshTokenCookie.isBlank())
+                ? hashToken(refreshTokenCookie)
+                : null;
+
         Instant now = Instant.now();
-        return tokens.stream()
+        List<RefreshToken> validTokens = tokens.stream()
                 .filter(t -> t.getExpiresAt().isAfter(now))
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .collect(Collectors.toList());
+
+        UUID currentSessionId = null;
+        if (currentHash != null) {
+            for (RefreshToken t : validTokens) {
+                if (currentHash.equals(t.getTokenHash())) {
+                    currentSessionId = t.getId();
+                    break;
+                }
+            }
+        }
+
+        if (currentSessionId == null && validTokens.size() == 1) {
+            currentSessionId = validTokens.get(0).getId();
+        } else if (currentSessionId == null && !validTokens.isEmpty()) {
+            if (userAgent != null && !userAgent.isBlank()) {
+                for (RefreshToken t : validTokens) {
+                    if (userAgent.equals(t.getUserAgent())) {
+                        currentSessionId = t.getId();
+                        break;
+                    }
+                }
+            }
+            if (currentSessionId == null) {
+                currentSessionId = validTokens.get(0).getId();
+            }
+        }
+
+        final UUID finalCurrentId = currentSessionId;
+        return validTokens.stream()
                 .map(t -> SessionResponse.builder()
                         .id(t.getId())
                         .ipAddress(t.getIpAddress() != null ? t.getIpAddress() : "127.0.0.1")
                         .userAgent(t.getUserAgent() != null ? t.getUserAgent() : "Unknown Browser")
                         .createdAt(t.getCreatedAt())
                         .expiresAt(t.getExpiresAt())
-                        .isCurrent(false)
+                        .isCurrent(finalCurrentId != null && t.getId().equals(finalCurrentId))
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    private String hashToken(String token) {
+        try {
+            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(token.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new RuntimeException("Error hashing token", e);
+        }
     }
 
     @Override
@@ -93,6 +150,68 @@ public class SecurityManagementServiceImpl implements SecurityManagementService 
         refreshTokenRepository.save(token);
 
         auditService.logEvent(user.getId(), "SESSION_REVOKE", "SUCCESS", null, null, "Revoked session: " + sessionId);
+    }
+
+    @Override
+    @Transactional
+    public void revokeAllOtherSessions(String email, String refreshTokenCookie, String ipAddress, String userAgent) {
+        User user = getUser(email);
+        List<RefreshToken> tokens = refreshTokenRepository.findByUserIdAndRevokedFalse(user.getId());
+
+        String currentHash = (refreshTokenCookie != null && !refreshTokenCookie.isBlank())
+                ? hashToken(refreshTokenCookie)
+                : null;
+
+        Instant now = Instant.now();
+        List<RefreshToken> validTokens = tokens.stream()
+                .filter(t -> t.getExpiresAt().isAfter(now))
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .collect(Collectors.toList());
+
+        UUID currentSessionId = null;
+        if (currentHash != null) {
+            for (RefreshToken t : validTokens) {
+                if (currentHash.equals(t.getTokenHash())) {
+                    currentSessionId = t.getId();
+                    break;
+                }
+            }
+        }
+        if (currentSessionId == null && validTokens.size() == 1) {
+            currentSessionId = validTokens.get(0).getId();
+        } else if (currentSessionId == null && !validTokens.isEmpty()) {
+            if (userAgent != null && !userAgent.isBlank()) {
+                for (RefreshToken t : validTokens) {
+                    if (userAgent.equals(t.getUserAgent())) {
+                        currentSessionId = t.getId();
+                        break;
+                    }
+                }
+            }
+            if (currentSessionId == null) {
+                currentSessionId = validTokens.get(0).getId();
+            }
+        }
+
+        final UUID finalCurrentId = currentSessionId;
+        List<RefreshToken> tokensToRevoke = validTokens.stream()
+                .filter(t -> finalCurrentId == null || !t.getId().equals(finalCurrentId))
+                .peek(t -> t.setRevoked(true))
+                .collect(Collectors.toList());
+
+        if (!tokensToRevoke.isEmpty()) {
+            refreshTokenRepository.saveAll(tokensToRevoke);
+            auditService.logEvent(user.getId(), "REVOKE_ALL_OTHER_SESSIONS", "SUCCESS", ipAddress, userAgent,
+                    "Revoked " + tokensToRevoke.size() + " other active session(s)");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void revokeAllSessions(String email) {
+        User user = getUser(email);
+        refreshTokenRepository.revokeAllActiveTokensByUser(user);
+        auditService.logEvent(user.getId(), "REVOKE_ALL_SESSIONS", "SUCCESS", null, null, "All active sessions revoked");
     }
 
     @Override

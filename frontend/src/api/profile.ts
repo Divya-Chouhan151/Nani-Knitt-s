@@ -1,6 +1,9 @@
 import { User } from "../types/auth";
 
-const PROFILE_API_URL = import.meta.env.VITE_PROFILE_API_URL || "http://localhost:8081/api/v1/profile";
+const PROFILE_API_URL =
+  typeof window !== "undefined" && window.location?.origin && window.location.origin !== "null"
+    ? (import.meta.env.VITE_PROFILE_API_URL || `${window.location.origin}/api/v1/profile`)
+    : (import.meta.env.VITE_PROFILE_API_URL || "http://localhost:8081/api/v1/profile");
 
 function getAuthHeaders(token?: string | null) {
   const headers: Record<string, string> = {

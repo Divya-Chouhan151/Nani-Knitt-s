@@ -4,6 +4,8 @@ import {
   changePasswordApi,
   fetchActiveSessionsApi,
   revokeSessionApi,
+  revokeAllOtherSessionsApi,
+  revokeAllSessionsApi,
   initiate2FaSetupApi,
   confirm2FaApi,
   disable2FaApi,
@@ -21,6 +23,9 @@ export function SecurityTab() {
   // Sessions state
   const [sessions, setSessions] = createSignal<Session[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = createSignal(true);
+  const [revokingId, setRevokingId] = createSignal<string | null>(null);
+  const [isRevokingAllOthers, setIsRevokingAllOthers] = createSignal(false);
+  const [isRevokingAll, setIsRevokingAll] = createSignal(false);
 
   // 2FA state
   const [is2FaEnabled, setIs2FaEnabled] = createSignal(false);
@@ -37,8 +42,8 @@ export function SecurityTab() {
   // Audit logs state
   const [logs, setLogs] = createSignal<SecurityEvent[]>([]);
 
-  const loadSecurityData = async () => {
-    setIsLoadingSessions(true);
+  const loadSecurityData = async (initial = false) => {
+    if (initial) setIsLoadingSessions(true);
     setIs2FaEnabled(Boolean(authStore.user()?.twoFactorEnabled));
     try {
       const [sess, audit] = await Promise.all([
@@ -50,11 +55,13 @@ export function SecurityTab() {
     } catch (err: any) {
       console.error("Failed to load security data", err);
     } finally {
-      setIsLoadingSessions(false);
+      if (initial) setIsLoadingSessions(false);
     }
   };
 
-  onMount(loadSecurityData);
+  onMount(() => {
+    loadSecurityData(true);
+  });
 
   // Password strength calculator
   const passwordStrength = () => {
@@ -114,12 +121,65 @@ export function SecurityTab() {
   };
 
   const handleRevokeSession = async (id: string) => {
+    if (revokingId()) return;
+    setRevokingId(id);
     try {
       await revokeSessionApi(id, authStore.accessToken());
       authStore.showToast("Session revoked");
-      await loadSecurityData();
+      // Optimistically remove session from local state so the page never reloads or flickers
+      setSessions((prev) => prev.filter((s) => s.id !== id));
+      // Silently refresh security logs in the background without resetting session list state
+      fetchSecurityLogsApi(authStore.accessToken()).then(setLogs).catch(() => {});
     } catch (err: any) {
-      authStore.showToast(err.message);
+      authStore.showToast(err.message || "Failed to revoke session");
+    } finally {
+      setRevokingId(null);
+    }
+  };
+
+  const otherSessionsCount = () => sessions().filter((s) => !s.isCurrent).length;
+
+  const handleRevokeCurrentSession = async (id: string) => {
+    if (revokingId()) return;
+    setRevokingId(id);
+    try {
+      await revokeSessionApi(id, authStore.accessToken());
+    } catch {
+      // Ignore network errors
+    } finally {
+      setRevokingId(null);
+      await authStore.logout();
+    }
+  };
+
+  const handleRevokeAllOtherSessions = async () => {
+    if (isRevokingAllOthers()) return;
+    setIsRevokingAllOthers(true);
+    try {
+      await revokeAllOtherSessionsApi(authStore.accessToken());
+      authStore.showToast("All other sessions revoked");
+      setSessions((prev) => prev.filter((s) => s.isCurrent));
+      fetchSecurityLogsApi(authStore.accessToken()).then(setLogs).catch(() => {});
+    } catch (err: any) {
+      authStore.showToast(err.message || "Failed to revoke other sessions");
+    } finally {
+      setIsRevokingAllOthers(false);
+    }
+  };
+
+  const handleRevokeAllSessions = async () => {
+    if (isRevokingAll()) return;
+    if (!window.confirm("Are you sure you want to revoke all sessions? You will be signed out on all devices including this one.")) {
+      return;
+    }
+    setIsRevokingAll(true);
+    try {
+      await revokeAllSessionsApi(authStore.accessToken());
+    } catch {
+      // Ignore errors
+    } finally {
+      setIsRevokingAll(false);
+      await authStore.logout();
     }
   };
 
@@ -318,10 +378,40 @@ export function SecurityTab() {
 
       {/* Active Sessions */}
       <div class="space-y-3">
-        <h3 class="text-sm font-bold text-[var(--text-primary)]">Active Devices & Sessions</h3>
-        <p class="text-xs text-[var(--text-secondary)]">
-          Signed-in browser sessions. You can revoke any unrecognized device to invalidate its access.
-        </p>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 class="text-sm font-bold text-[var(--text-primary)]">Active Devices & Sessions</h3>
+            <p class="text-xs text-[var(--text-secondary)]">
+              Signed-in browser sessions. You can revoke any unrecognized device to invalidate its access.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap flex-shrink-0">
+            <Show when={otherSessionsCount() > 0}>
+              <button
+                type="button"
+                onClick={handleRevokeAllOtherSessions}
+                disabled={isRevokingAllOthers()}
+                class="px-3 py-1.5 rounded-xl border border-rose-500/30 hover:bg-rose-500/10 text-rose-500 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <span>🗑️</span>
+                <span>{isRevokingAllOthers() ? "Revoking Others..." : `Revoke All Others (${otherSessionsCount()})`}</span>
+              </button>
+            </Show>
+
+            <Show when={sessions().length > 0}>
+              <button
+                type="button"
+                onClick={handleRevokeAllSessions}
+                disabled={isRevokingAll()}
+                class="px-3 py-1.5 rounded-xl bg-rose-600/10 hover:bg-rose-600/20 text-rose-600 text-xs font-bold transition-all disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
+              >
+                <span>🚪</span>
+                <span>{isRevokingAll() ? "Revoking All..." : "Revoke All Sessions"}</span>
+              </button>
+            </Show>
+          </div>
+        </div>
 
         <div class="border border-[var(--border)] rounded-2xl overflow-hidden bg-[var(--bg-page)] divide-y divide-[var(--border)]/60">
           <Show
@@ -332,7 +422,7 @@ export function SecurityTab() {
               when={sessions().length > 0}
               fallback={
                 <div class="p-6 text-center text-xs text-[var(--text-secondary)]">
-                  Only current session active.
+                  No active sessions found.
                 </div>
               }
             >
@@ -354,13 +444,42 @@ export function SecurityTab() {
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleRevokeSession(sess.id)}
-                      class="px-3 py-1 rounded-lg hover:bg-rose-500/10 text-rose-500 text-xs font-bold transition-all"
+                    <Show
+                      when={!sess.isCurrent}
+                      fallback={
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20 shadow-2xs">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Current Session
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleRevokeCurrentSession(sess.id);
+                            }}
+                            disabled={revokingId() === sess.id}
+                            class="px-2.5 py-1 rounded-lg border border-[var(--border)] hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/30 text-[var(--text-secondary)] text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
+                          >
+                            {revokingId() === sess.id ? "Signing Out..." : "Sign Out"}
+                          </button>
+                        </div>
+                      }
                     >
-                      Revoke
-                    </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleRevokeSession(sess.id);
+                        }}
+                        disabled={revokingId() === sess.id}
+                        class="px-3 py-1 rounded-lg hover:bg-rose-500/10 text-rose-500 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+                      >
+                        {revokingId() === sess.id ? "Revoking..." : "Revoke"}
+                      </button>
+                    </Show>
                   </div>
                 )}
               </For>

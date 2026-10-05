@@ -5,6 +5,7 @@ import solidPlugin from "vite-plugin-solid";
 export default defineConfig({
   plugins: [solidPlugin()],
   server: {
+    host: "0.0.0.0",
     port: 3000,
     proxy: {
       "/api/v1/geo/photon-reverse": {
@@ -53,6 +54,18 @@ export default defineConfig({
             if ("writeHead" in res && !res.headersSent) {
               res.writeHead(503, { "Content-Type": "application/json" });
               res.end(JSON.stringify({ error: "Profile service unavailable" }));
+            }
+          });
+        },
+      },
+      "/api/v1/support": {
+        target: "http://localhost:8081",
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("error", (err, _req, res) => {
+            if ("writeHead" in res && !res.headersSent) {
+              res.writeHead(503, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Support service unavailable" }));
             }
           });
         },

@@ -220,7 +220,7 @@ public class AuthServiceImpl implements AuthService {
                 .httpOnly(true)
                 .secure(false) // Set to true in production over HTTPS
                 .sameSite("Lax")
-                .path("/api/v1/auth")
+                .path("/")
                 .maxAge(refreshTokenExpirationMs / 1000)
                 .build();
 
@@ -232,7 +232,7 @@ public class AuthServiceImpl implements AuthService {
                 .httpOnly(true)
                 .secure(false)
                 .sameSite("Lax")
-                .path("/api/v1/auth")
+                .path("/")
                 .maxAge(0)
                 .build();
 

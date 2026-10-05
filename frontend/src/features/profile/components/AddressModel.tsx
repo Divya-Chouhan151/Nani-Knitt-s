@@ -51,13 +51,6 @@ export function AddressModel(props: AddressModelProps) {
     { dx: -2, dy: 2 },  { dx: -1, dy: 2 },  { dx: 0, dy: 2 },  { dx: 1, dy: 2 },  { dx: 2, dy: 2 },
   ];
 
-  const [isPinBouncing, setIsPinBouncing] = createSignal(false);
-  let bounceTimer: ReturnType<typeof setTimeout> | null = null;
-  const triggerPinBounce = () => {
-    if (bounceTimer) clearTimeout(bounceTimer);
-    setIsPinBouncing(true);
-    bounceTimer = setTimeout(() => setIsPinBouncing(false), 300);
-  };
 
   const tileInfo = createMemo(() => {
     const z = zoom();
@@ -248,7 +241,6 @@ export function AddressModel(props: AddressModelProps) {
       setMapCoords(loc);
       setPanOffset({ x: 0, y: 0 });
       setPermissionNotice(null);
-      triggerPinBounce();
       triggerGeocode(loc.lat, loc.lng);
     } else {
       setPermissionNotice("Location access was denied. You can search your address or move the map pointer manually.");
@@ -269,7 +261,6 @@ export function AddressModel(props: AddressModelProps) {
       setMapCoords(loc);
       setPanOffset({ x: 0, y: 0 });
       setPermissionNotice(null);
-      triggerPinBounce();
       triggerGeocode(loc.lat, loc.lng);
     } else {
       if (perm === "denied") {
@@ -321,7 +312,6 @@ export function AddressModel(props: AddressModelProps) {
     setIsSuggestionsOpen(false);
     setMapCoords({ lat: s.lat, lng: s.lng });
     setPanOffset({ x: 0, y: 0 });
-    triggerPinBounce();
     ++currentGeocodeId;
     setResolvedAddress({
       ...s.addressComponents,
@@ -333,7 +323,6 @@ export function AddressModel(props: AddressModelProps) {
 
   // Map panning & Pin drag handlers
   const handleStartDrag = (clientX: number, clientY: number, fromPin = false) => {
-    setIsPinBouncing(false);
     setIsPanning(true);
     setIsDraggingPin(fromPin);
     totalDragDistance = 0;
@@ -359,7 +348,6 @@ export function AddressModel(props: AddressModelProps) {
       setIsDraggingPin(false);
       setIsPanning(false);
       setDragStart(null);
-      triggerPinBounce();
       triggerGeocode(mapCoords().lat, mapCoords().lng);
     }
   };
@@ -445,7 +433,6 @@ export function AddressModel(props: AddressModelProps) {
     const offsetY = e.clientY - (rect.top + rect.height / 2);
     const newCoords = pixelOffsetToCoords(offsetX, offsetY, mapCoords().lat, mapCoords().lng, zoom());
     setMapCoords(newCoords);
-    triggerPinBounce();
     triggerGeocode(newCoords.lat, newCoords.lng);
   };
 
@@ -807,44 +794,21 @@ export function AddressModel(props: AddressModelProps) {
                   </button>
                 </div>
 
-                {/* Scoped Keyframes for Anchor-Locked Drop Animation */}
-                <style>{`
-                  @keyframes pinDrop {
-                    0% { transform: translate(-50%, -120%); }
-                    50% { transform: translate(-50%, -96%); }
-                    75% { transform: translate(-50%, -102%); }
-                    100% { transform: translate(-50%, -100%); }
-                  }
-                  .pin-drop-anim {
-                    animation: pinDrop 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-                  }
-                `}</style>
-
                 {/* 🎯 Ground Target Point (Always anchored at exact map center: 50%, 50%) */}
                 <div
                   id="pin-ground-anchor"
                   class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none flex items-center justify-center w-6 h-6"
                 >
                   <div class="w-4 h-4 rounded-full border-2 border-rose-500/80 bg-rose-500/20 animate-ping absolute" />
-                  <div
-                    class={`rounded-full bg-black/40 transition-all duration-150 ${
-                      isDraggingPin() || isPanning()
-                        ? "w-3 h-1 opacity-30 scale-75"
-                        : "w-2.5 h-1.5 opacity-70 scale-100"
-                    }`}
-                  />
+                  <div class="w-2.5 h-1.5 rounded-full bg-black/40 opacity-70" />
                 </div>
 
                 {/* 📍 MOVABLE MAP POINTER (Anchored with tip at exact center: 50%, 50%) */}
                 <div
                   id="fixed-center-pin"
-                  class={`absolute top-1/2 left-1/2 z-30 flex flex-col items-center cursor-grab active:cursor-grabbing select-none pointer-events-auto ${
-                    isPinBouncing() && !isPanning() && !isDraggingPin() ? "pin-drop-anim" : ""
-                  }`}
+                  class="absolute top-1/2 left-1/2 z-30 flex flex-col items-center cursor-grab active:cursor-grabbing select-none pointer-events-auto"
                   style={{
-                    transform: isDraggingPin() || isPanning() ? "translate(-50%, -115%)" : "translate(-50%, -100%)",
-                    "transform-origin": "bottom center",
-                    transition: isPinBouncing() ? "none" : "transform 150ms ease-out",
+                    transform: "translate(-50%, -100%)",
                   }}
                   onMouseDown={(e) => {
                     e.preventDefault();
@@ -861,12 +825,10 @@ export function AddressModel(props: AddressModelProps) {
                 >
                   <div
                     id="fixed-pin-badge"
-                    class={`mb-1 px-3 py-1 rounded-full bg-slate-900/95 text-white text-[11px] font-bold shadow-xl border border-white/20 whitespace-nowrap flex items-center gap-1.5 transition-all duration-150 ${
+                    class={`mb-1 px-3 py-1 rounded-full bg-slate-900/95 text-white text-[11px] font-bold shadow-xl border border-white/20 whitespace-nowrap flex items-center gap-1.5 transition-opacity duration-150 ${
                       isSuggestionsOpen()
-                        ? "opacity-0 scale-95 pointer-events-none invisible"
-                        : isPanning() || isDraggingPin()
-                        ? "opacity-90 -translate-y-2 visible"
-                        : "opacity-100 translate-y-0 visible"
+                        ? "opacity-0 pointer-events-none invisible"
+                        : "opacity-100 visible"
                     }`}
                     aria-hidden={isSuggestionsOpen()}
                   >
@@ -874,15 +836,7 @@ export function AddressModel(props: AddressModelProps) {
                     <span>{isDraggingPin() ? "Drop at your house/building" : "Order will be delivered here"}</span>
                   </div>
 
-                  <div
-                    class={`relative transition-transform duration-150 ease-out origin-bottom ${
-                      isDraggingPin()
-                        ? "-translate-y-2 scale-110 drop-shadow-2xl"
-                        : isPanning()
-                        ? "-translate-y-1 scale-105 drop-shadow-2xl"
-                        : "translate-y-0 scale-100 drop-shadow-md"
-                    }`}
-                  >
+                  <div class="relative drop-shadow-md">
                     <svg width="40" height="52" viewBox="0 0 44 56" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path
                         d="M22 0C9.85 0 0 9.85 0 22C0 37.5 22 56 22 56C22 56 44 37.5 44 22C44 9.85 34.15 0 22 0Z"
